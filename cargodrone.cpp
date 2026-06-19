@@ -8,7 +8,6 @@
 
 using namespace std;
 
-// 1. Delivery Request Handling Using Priority Queue
 enum Priority {
     ROUTINE = 1,
     EXPRESS = 2,
@@ -21,31 +20,27 @@ struct DeliveryRequest {
     Priority priority;
     string item;
 
-    // Max-heap: highest priority should be at the top
     bool operator<(const DeliveryRequest& other) const {
         return priority < other.priority;
     }
 };
 
-// 2. Drone Structure for Binary Search
 struct Drone {
     int id;
-    string status; // e.g., "Available", "Maintenance", "In Transit"
+    string status;
     int batteryLevel;
 
-    // Sort by ID to enable binary search
     bool operator<(const Drone& other) const {
         return id < other.id;
     }
 };
 
-// 3. Network Graph for Route Optimization (Dijkstra) and Connectivity (BFS)
 class DroneNetwork {
 private:
     int numLocations;
     vector<string> locationNames;
     unordered_map<string, int> locationIds;
-    vector<vector<pair<int, int>>> adjList; // pair<neighbor_id, weight>
+    vector<vector<pair<int, int>>> adjList;
 
 public:
     DroneNetwork() : numLocations(0) {}
@@ -65,10 +60,9 @@ public:
         int idU = locationIds[u];
         int idV = locationIds[v];
         adjList[idU].push_back({idV, distance});
-        adjList[idV].push_back({idU, distance}); // Undirected graph
+        adjList[idV].push_back({idU, distance});
     }
 
-    // Route Optimization using Dijkstra's Algorithm
     void findShortestPath(const string& start, const string& destination) {
         if (locationIds.find(start) == locationIds.end() || locationIds.find(destination) == locationIds.end()) {
             cout << "Invalid locations for route optimization.\n";
@@ -82,7 +76,6 @@ public:
         vector<int> parent(numLocations, -1);
         dist[startId] = 0;
 
-        // Min-heap: pair<distance, node_id>
         priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
         pq.push({0, startId});
 
@@ -92,8 +85,7 @@ public:
             pq.pop();
 
             if (d > dist[u]) continue;
-
-            if (u == destId) break; // Reached target destination
+            if (u == destId) break;
 
             for (auto& edge : adjList[u]) {
                 int v = edge.first;
@@ -123,7 +115,6 @@ public:
         }
     }
 
-    // Connectivity Verification using BFS
     void checkConnectivity(const string& start) {
         if (locationIds.find(start) == locationIds.end()) {
             cout << "Invalid starting location for connectivity check.\n";
@@ -169,7 +160,6 @@ public:
     }
 };
 
-// Drone Search using Binary Search
 void searchDrone(const vector<Drone>& fleet, int searchId) {
     int left = 0;
     int right = fleet.size() - 1;
@@ -201,16 +191,13 @@ int main() {
     cout << "   International Cargo Drone Delivery Network    \n";
     cout << "=================================================\n\n";
 
-    // ---------------------------------------------------------
-    // 1. Delivery Request Handling Using Priority Queue
-    // ---------------------------------------------------------
     cout << "--- 1. Processing Delivery Requests (Priority Queue) ---\n";
     priority_queue<DeliveryRequest> deliveryQueue;
     
-    deliveryQueue.push({101, "Remote Village A", EXPRESS, "Vaccines"});
-    deliveryQueue.push({102, "Distribution Center B", ROUTINE, "Office Supplies"});
-    deliveryQueue.push({103, "Hospital C", EMERGENCY, "Blood Bags"});
-    deliveryQueue.push({104, "Clinic D", EXPRESS, "Antibiotics"});
+    deliveryQueue.push({101, "Matheran Hills Outpost", EXPRESS, "Vaccines"});
+    deliveryQueue.push({102, "Kharghar Sector-10", ROUTINE, "Office Supplies"});
+    deliveryQueue.push({103, "Apollo Hospital Navi Mumbai", EMERGENCY, "Blood Bags"});
+    deliveryQueue.push({104, "Ambernath", EXPRESS, "Antibiotics"});
 
     while (!deliveryQueue.empty()) {
         DeliveryRequest req = deliveryQueue.top();
@@ -221,9 +208,6 @@ int main() {
     }
     cout << "\n";
 
-    // ---------------------------------------------------------
-    // 2. Drone Search Using Binary Search
-    // ---------------------------------------------------------
     cout << "--- 2. Fleet Monitoring (Binary Search) ---\n";
     vector<Drone> fleet = {
         {1001, "Available", 95},
@@ -233,7 +217,6 @@ int main() {
         {1005, "In Transit", 60}
     };
     
-    // Sort fleet by ID as a requirement for Binary Search
     sort(fleet.begin(), fleet.end()); 
     
     int searchId1 = 1003;
@@ -245,33 +228,29 @@ int main() {
     searchDrone(fleet, searchId2);
     cout << "\n";
 
-    // ---------------------------------------------------------
-    // 3 & 4. Route Optimization & Connectivity (Graph)
-    // ---------------------------------------------------------
     DroneNetwork network;
-    network.addLocation("Warehouse HQ");
-    network.addLocation("City Alpha");
-    network.addLocation("City Beta");
-    network.addLocation("Hospital Gamma");
-    network.addLocation("Remote Village Delta");
-    network.addLocation("Isolated Region Epsilon"); // This node will be intentionally disconnected
 
-    network.addRoute("Warehouse HQ", "City Alpha", 10);
-    network.addRoute("Warehouse HQ", "City Beta", 15);
-    network.addRoute("City Alpha", "Hospital Gamma", 5);
-    network.addRoute("City Beta", "Hospital Gamma", 8);
-    network.addRoute("City Beta", "Remote Village Delta", 20);
-    network.addRoute("Hospital Gamma", "Remote Village Delta", 12);
-    // Note: No routes are added for "Isolated Region Epsilon"
+    network.addLocation("Panvel Central Warehouse");
+    network.addLocation("Ambernath");
+    network.addLocation("Kharghar Sector-10");
+    network.addLocation("Apollo Hospital Navi Mumbai");
+    network.addLocation("Matheran Hills Outpost");
+    network.addLocation("Sanjay Gandhi National Park Jungle");
 
-    // --- 3. Dijkstra's Algorithm ---
+    network.addRoute("Panvel Central Warehouse", "Ambernath", 10);
+    network.addRoute("Panvel Central Warehouse", "Kharghar Sector-10", 15);
+    network.addRoute("Ambernath", "Apollo Hospital Navi Mumbai", 5);
+    network.addRoute("Ambernath", "Kharghar Sector-10", 15);
+    network.addRoute("Kharghar Sector-10", "Apollo Hospital Navi Mumbai", 8);
+    network.addRoute("Kharghar Sector-10", "Matheran Hills Outpost", 20);
+    network.addRoute("Apollo Hospital Navi Mumbai", "Matheran Hills Outpost", 12);
+
     cout << "--- 3. Route Optimization (Dijkstra's Algorithm) ---\n";
-    network.findShortestPath("Warehouse HQ", "Remote Village Delta");
+    network.findShortestPath("Panvel Central Warehouse", "Matheran Hills Outpost");
     cout << "\n";
 
-    // --- 4. Breadth First Search (BFS) ---
     cout << "--- 4. Connectivity Verification (BFS) ---\n";
-    network.checkConnectivity("Warehouse HQ");
+    network.checkConnectivity("Panvel Central Warehouse");
     cout << "\n";
 
     return 0;
